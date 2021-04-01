@@ -1,3 +1,5 @@
+let version = 9
+
 let arquivos =[
     "/",
     "css/estilos.css",
@@ -30,18 +32,20 @@ let arquivos =[
     "js/cabecalho/novoCartao.js",
 ]
 
-self.addEventListener("install", function (){
-    console.log("Instalou")
-    caches.open("ceep-arquivos").then(cache => {
-        cache.addAll(arquivos)
+self.addEventListener("activate", function (){
+        caches.open("ceep-arquivos-" + version).then(cache => {
+            cache.addAll(arquivos)
+                .then(function (){
+                    caches.delete("ceep-arquivos-" + (version - 1))
+                    caches.delete("ceep-arquivos")
+                })
+        })
     })
-})
 
 self.addEventListener("fetch", function (event){
     let pedido = event.request;
     let promiseResposta = caches.match(pedido).then(respostaCache => {
-            let resposta = respostaCache ? respostaCache : fetch(pedido)
-            return resposta
+        return respostaCache ? respostaCache : fetch(pedido)
         })
     event.respondWith(promiseResposta)
 })
